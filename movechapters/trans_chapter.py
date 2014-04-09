@@ -1,4 +1,10 @@
-__author__ = 'leosamu@upv.es'
+__author__ = "Leonardo Salom Muñoz"
+__credits__ = ["Leonardo Salom Muñoz"]
+__version__ = "0.0.1-SNAPSHOT"
+__maintainer__ = "Leonardo Salom Muñoz"
+__email__ = "leosamu@upv.es"
+__status__ = "Development"
+
 import pymongo
 import bson.son
 import sys

@@ -1,4 +1,9 @@
-__author__ = 'leosamu@upv.es'
+__author__ = "Leonardo Salom Muñoz"
+__credits__ = ["Leonardo Salom Muñoz", "Ignacio Despujol Zabala"]
+__version__ = "0.0.1-SNAPSHOT"
+__maintainer__ = "Leonardo Salom Muñoz"
+__email__ = "leosamu@upv.es"
+__status__ = "Development"
 import os, tarfile, shutil, xlrd, datetime
 from lxml import etree
 
@@ -85,6 +90,10 @@ CEXAMENESPREVIOUSTEXTCOL = 4
 
 problemSetID = 1
 path = ""
+
+"""
+hardcoded xlsmpath must change to a parameter
+"""
 xlsmPath = "C:\Users\leosamu\Documents\XLS\MOOCExcelExperimental.xlsm"
 wb = xlrd.open_workbook(xlsmPath)
 
@@ -474,6 +483,9 @@ def createProblemSet(_Chapter, _Subsection, _Lesson, _row, _urlName, _displayNam
 def createProblem(_displayName, _row, _urlName):
     """
     creates a problem object xml
+    :param _displayName:
+    :param _row:
+    :param _urlName:
     """
     sheetProblem = wb.sheet_by_name(CPROBLEMASSHEET)
     xmlfile = path + "/problem/" + _urlName + ".xml"
@@ -533,6 +545,8 @@ def problemText(_page, _row):
     <stringresponse answer="Michigan" type="ci" >
     <textline size="20"/>
     </stringresponse>
+    :param _page:
+    :param _row:
     """
     sheetProblem = wb.sheet_by_name(CPROBLEMASSHEET)
     tolerance = sheetProblem.cell_value(_row, CPROBLEMASCORRECTACOL)
@@ -549,6 +563,8 @@ def problemNumerical(_page, _row):
     <responseparam type="tolerance" default=".02" />
     <formulaequationinput />
     </numericalresponse>
+    :param _page:
+    :param _row:
     """
     sheetProblem = wb.sheet_by_name(CPROBLEMASSHEET)
     tolerance = sheetProblem.cell_value(_row, CPROBLEMASCORRECTACOL)
@@ -562,6 +578,8 @@ def problemNumerical(_page, _row):
 def problemMultiChoice(_page, _row):
     """
     adds the options in a multichoice problem type
+    :param _page:
+    :param _row:
     """
     sheetProblem = wb.sheet_by_name(CPROBLEMASSHEET)
     rightAnswer = sheetProblem.cell_value(_row, CPROBLEMASCORRECTACOL)
@@ -584,6 +602,8 @@ def problemMultiChoice(_page, _row):
 def problemCheckBox(_page, _row):
     """
     adds the options in a checkbox problem type
+    :param _page:
+    :param _row:
     """
 
     sheetProblem = wb.sheet_by_name(CPROBLEMASSHEET)
@@ -614,6 +634,13 @@ def createVertical(_Chapter, _Subsection, _Lesson, _row, _urlName, _ChapterDispl
     video Video
     html Resumen
     forumlink Foro
+    :param _Chapter:
+    :param _Subsection:
+    :param _Lesson:
+    :param _row:
+    :param _urlName:
+    :param _ChapterDisplayName:
+    :param _SubsectionDisplayName:
     """
     baseName = "Unidad" + str(int(_Chapter)) + "Subsection" + str(int(_Subsection)) + "Vertical" + str(int(_Lesson))
     sheetCurso = wb.sheet_by_name(CCURSOSHEET)
@@ -661,6 +688,9 @@ def createVertical(_Chapter, _Subsection, _Lesson, _row, _urlName, _ChapterDispl
 def createVideo(_urlName, _videoURL, _displayName):
     """
     generates the video xml file
+    :param _urlName:
+    :param _videoURL:
+    :param _displayName:
     """
     xmlfile = path + "/video/" + _urlName + ".xml"
     page = etree.Element('video', youtube="1.00" + _videoURL, display_name=_displayName, youtube_id_1_0=_videoURL)
@@ -674,6 +704,9 @@ def createHtml(_urlName, _htmlText, _displayName):
     """
     generates the xml and html file wich will link the html
     into the course
+    :param _urlName:
+    :param _htmlText:
+    :param _displayName:
     """
     xmlfile = path + "/html/" + _urlName + ".xml"
     htmlfile = path + "/html/" + _urlName + ".html"
@@ -692,6 +725,11 @@ def createDiscussion(_urlName, _discussionCategory, _SubsectionDisplayName, _dis
     """
     generates the discussion file wich will link the discussion
     into the course
+    :param _urlName:
+    :param _discussionCategory:
+    :param _SubsectionDisplayName:
+    :param _discussionID:
+    :param _displayName:
     """
     xmlfile = path + "/discussion/" + _urlName + ".xml"
     page = etree.Element('discussion', discussion_category=_discussionCategory,
@@ -703,8 +741,13 @@ def createDiscussion(_urlName, _discussionCategory, _SubsectionDisplayName, _dis
     doc.write(xmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
 
 
-#needs to change the way we do the search
 def findProblems(_chapter, _subSection, _lesson):
+    """
+    :param _chapter:
+    :param _subSection:
+    :param _lesson:
+    :return:
+    """
     sheetProblems = wb.sheet_by_name(CPROBLEMASSHEET)
     sheetProblems.nrows
     for row in range(1, sheetProblems.nrows):
