@@ -22,11 +22,14 @@ CDATOSGENERALESABOUTPOS = [5, 5]
 CDATOSGENERALESPREREQUISITESPOS = [5, 4]
 CDATOSGENERALESTEACHERSPOS = [5, 0]
 CDATOSGENERALESEFFORTPOS = [5, 3]
+CDATOSGENERALESABOUTVIDEOPOS=[3, 7]
+CDATOSGENERALESINFOPOS=[5,6]
 
 """
     sheet->unidad
 """
 CUNIDADSHEET = "Unidades2"
+CUNIDADTYPECOL = 0
 CUNIDADCHAPTERIDCOL = 1
 CUNIDADCHAPTERNAMECOL = 2
 CUNIDADSUBSECTIONIDCOL = 3
@@ -87,6 +90,7 @@ wb = xlrd.open_workbook(xlsmPath)
 
 
 def generate_Edx():
+    select_base_path()
     clean()
     create_directory_tree()
     create_course_id_file()
@@ -97,10 +101,12 @@ def generate_Edx():
     create_policies()
     make_tarfile()
 
+
 def select_base_path():
     sheet = wb.sheet_by_name(CDATOSGENERALESSHEET)
     global path
     path = sheet.cell_value(CDATOSGENERALESNOMBREPOS[0], CDATOSGENERALESNOMBREPOS[1])
+
 
 def clean():
     """
@@ -110,6 +116,7 @@ def clean():
         shutil.rmtree(path)
     except:
         print "cannot remove " + path
+
 
 def create_directory_tree():
     """
@@ -143,6 +150,7 @@ def create_directory_tree():
         if not os.path.exists(path + "/discussion"):
             os.makedirs(path + "/discussion")
 
+
 def create_course_id_file():
     """
     generates course.xml in the main dir
@@ -163,6 +171,7 @@ def create_course_id_file():
 
     # Save to XML file
     doc.write(xmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
+
 
 def create_roots():
     """
@@ -185,6 +194,7 @@ def create_roots():
     # Save to XML file
     doc.write(xmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
 
+
 def create_about():
     """
     creates the about files
@@ -192,30 +202,101 @@ def create_about():
     create_about_video()
     create_about_overview()
 
+
 def create_about_video():
     """
     creates the about video file
     """
-    print "about video"
+    sheet = wb.sheet_by_name(CDATOSGENERALESSHEET)
+    htmlfile = path + "/about/video.html"
+    page = etree.Element('iframe', width='560',
+                         height='315', src='//www.youtube.com/embed/' + sheet.cell_value(CDATOSGENERALESABOUTVIDEOPOS[0],CDATOSGENERALESABOUTVIDEOPOS[1]) +'?autoplay=0&rel=0',
+                         frameborder='0', allowfullscreen='')
+    # Make a new document tree
+    doc = etree.ElementTree(page)
+
+    doc.write(htmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
+
+
 
 def create_about_overview():
     """
-    creates the overview file
+    generates the overview file
     """
-    print "create about overview"
+    sheet = wb.sheet_by_name(CDATOSGENERALESSHEET)
+    htmlpath = path + "/about/overview.html"
+    about = sheet.cell_value(CDATOSGENERALESABOUTPOS[0],CDATOSGENERALESABOUTPOS[1])
+    if about[:1] != "<":
+            about = "<p>" + about + "</p>"
+    prerequisites = sheet.cell_value(CDATOSGENERALESPREREQUISITESPOS[0],CDATOSGENERALESPREREQUISITESPOS[1])
+    if prerequisites[:1] != "<":
+            prerequisites = "<p>" + prerequisites + "</p>"
+
+    aboutroot = etree.Element('section', Class='about')
+    about_writer = etree.ElementTree(aboutroot)
+    aboutroot.append(etree.fromstring('<h2>Acerca de este curso</h2>\n'))
+    aboutroot.append(etree.fromstring(about))
+
+    prerequisiteroot = etree.Element('section', Class='prerequisites')
+    prerequisitewriter = etree.ElementTree(prerequisiteroot)
+    prerequisiteroot.append(etree.fromstring('<h2>Prerrequisitos</h2>\n'))
+    prerequisiteroot.append(etree.fromstring(prerequisites))
+
+    coursestaffroot = etree.Element('section', Class='course-staff')
+    coursestaffwriter = etree.ElementTree(coursestaffroot)
+    coursestaffroot.append(etree.fromstring('<h2>Profesores del curso</h2>\n'))
+    teacherRow = CDATOSGENERALESTEACHERSPOS[0]
+    while sheet.nrows > teacherRow and sheet.cell_value(teacherRow, CDATOSGENERALESTEACHERSPOS[1]) != "":
+        article = etree.SubElement(coursestaffroot, 'article', Class='teacher')
+        div = etree.SubElement(article,'div', Class='teacher-image')
+        etree.SubElement(div, 'img', src='', align='left', style='margin:0 20 px 0 ')
+        teacherDescription = sheet.cell_value(teacherRow, CDATOSGENERALESTEACHERSPOS[1])
+        if teacherDescription[:1] != "<":
+            teacherDescription = "<p>" + teacherDescription + "</p>"
+        article.append(etree.fromstring(teacherDescription))
+        teacherRow += 2
+
+    about_writer.write(htmlpath, pretty_print=True, xml_declaration=False, encoding='utf-8')
+    htmlfile = open(htmlpath, 'a')
+    prerequisitewriter.write(htmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
+    coursestaffwriter.write(htmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
+    htmlfile.close()
 
 
 def create_policies():
     """
     this creates the policies file
     """
-    print "policies"
+
 
 def create_info():
     """
     this creates the info file
     """
-    print "info"
+    create_info_updates()
+    create_info_handouts()
+
+def create_info_updates():
+    """
+    creates info updates
+    """
+    sheet = wb.sheet_by_name(CDATOSGENERALESSHEET)
+    htmlfile = path + "/info/updates.html"
+    info = sheet.cell_value(CDATOSGENERALESINFOPOS[0],CDATOSGENERALESINFOPOS[1])
+    if info != "":
+        if info[:1] != "<":
+            info = "<p>" + info + "</p>"
+        page = etree.fromstring(info)
+        doc = etree.ElementTree(page)
+
+        doc.write(htmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
+
+def create_info_handouts():
+    """
+    creates info handouts
+    """
+    print "blas"
+
 
 def create_course():
     """
@@ -241,17 +322,12 @@ def create_course():
     for row in range(1, sheetUnidad.nrows):
         if currentChapter != sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL):
             currentChapter = sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL)
-            if (sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL) != "final"):
-                urlName = 'Unidad' + str(int(sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL)))
-                etree.SubElement(page, 'chapter',
-                                 url_name=urlName)
-            else:
-                urlName = 'Final'
-                etree.SubElement(page, 'chapter',
-                                 url_name=urlName)
+            urlName = 'Unidad' + str(int(sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL)))
+            etree.SubElement(page, 'chapter',url_name=urlName)
             create_chapter(row, urlName)
     # Save to XML file
     doc.write(xmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
+
 
 def create_chapter(_startRow, _urlName):
     """
@@ -268,70 +344,38 @@ def create_chapter(_startRow, _urlName):
     #this will serve as counter for the problems in the chapter
     global problemSetID
     problemSetID = 1
-    if currentChapter != "final":
-        strExamenID = "e" + str(int(currentChapter))
-        xmlfile = path + "/chapter/" + strChapterID + '.xml'
-    else:
-        strExamenID = "final"
-        xmlfile = path + "/chapter/Final.xml"
+    xmlfile = path + "/chapter/" + strChapterID + '.xml'
 
     # Create the root element
     page = etree.Element('chapter', display_name=chapterDisplayName)
     # Make a new document tree
     doc = etree.ElementTree(page)
     urlName = ""
-    if (currentChapter != "final"):
-        # Add normal childrens
-        for row in range(_startRow, sheetUnidad.nrows):
-            if currentChapter == sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL):
-                urlName = strChapterID + 'Subsection' + str(
-                    int(sheetUnidad.cell_value(row, CUNIDADSUBSECTIONIDCOL))) + "Sequential"
-                etree.SubElement(page, 'sequential',
-                                 url_name=urlName)
-                createSequential(sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL),
+    # Add normal childrens
+    for row in range(_startRow, sheetUnidad.nrows):
+        if currentChapter == sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL):
+            urlName = strChapterID + 'Subsection' + str(int(sheetUnidad.cell_value(row, CUNIDADSUBSECTIONIDCOL))) + "Sequential"
+            etree.SubElement(page, 'sequential',url_name=urlName)
+            createSequential(sheetUnidad.cell_value(row, CUNIDADTYPECOL),
+                                 sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL),
                                  sheetUnidad.cell_value(row, CUNIDADSUBSECTIONIDCOL),
                                  sheetUnidad.cell_value(row, CUNIDADCHAPTERNAMECOL),
                                  sheetUnidad.cell_value(row, CUNIDADSUBSECTIONNAMECOL), urlName,
                                  str(sheetUnidad.cell_value(row, CUNIDADFORMATCOL)), "", "")
-            else:
-                break
+        else:
+            break
 
-        # # Add exam if exists
-        # for rowExam in range(1, sheetProblems.nrows):
-        #     if strExamenID == sheetProblems.cell_value(rowExam, CPROBLEMASIDUNIDADCOL):
-        #         urlName = strChapterID + 'ExamenSequential'
-        #         etree.SubElement(page, 'sequential',
-        #                          url_name=urlName)
-        #         #TO-DO call to createExam
-        #         createSequential(sheetUnidad.cell_value(row, CUNIDADCHAPTERIDCOL),
-        #                          sheetUnidad.cell_value(row, CUNIDADSUBSECTIONIDCOL),
-        #                          sheetUnidad.cell_value(row, CUNIDADCHAPTERNAMECOL),
-        #                          sheetUnidad.cell_value(row, CUNIDADSUBSECTIONNAMECOL), urlName,
-        #                          "Examen", "", "")
-        #         break
-    else:
-        urlName = 'FinalExamenSequential'
-        etree.SubElement(page, 'sequential',
-                         url_name=urlName)
-        #TO-DO call to createExam
+
     # Save to XML file
     doc.write(xmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
 
-def createExamSequential(_section, _urlName, _format, _startDate, _endDate):
-    """
-    Creates the sequestial wich corresponds to an exam
-    <sequential display_name='Examen de la Unidad 6' format='Examen' start=''>
-    <vertical url_name='Unidad6-1_examen_vertical'/>
-    <vertical url_name='Unidad6-2_examen_vertical'/>
-    <vertical url_name='Unidad6-3_examen_vertical'/>
-    </sequential>
-    """
 
-def createSequential(_section, _subsection, _sectionDisplayName, _subsectionDisplayName, _urlName, _format, _startDate,
+def createSequential(_type, _section, _subsection, _sectionDisplayName, _subsectionDisplayName, _urlName, _format, _startDate,
                      _endDate):
     """
     creates sequential files
     wich contains a list of vertical files for each lesson and the problems of that lesson
+    :param _type:
     :param _section:
     :param _subsection:
     :param _sectionDisplayName:
@@ -360,25 +404,33 @@ def createSequential(_section, _subsection, _sectionDisplayName, _subsectionDisp
         if currentChapter == sheetCurso.cell_value(row,
                                                    CCURSOCHAPTERIDCOL) and currentSubsection == sheetCurso.cell_value(
                 row, CCURSOSUBSECTIONIDCOL):
-            urlName = "Unidad" + str(int(currentChapter)) + "Subsection" + str(
-                int(currentSubsection)) + "Vertical" + str(int(sheetCurso.cell_value(row, CCURSOLESSONIDCOL)))
-            etree.SubElement(page, 'vertical', url_name=urlName)
-            createVertical(currentChapter, currentSubsection, sheetCurso.cell_value(row, CCURSOLESSONIDCOL), row,
-                           urlName, _sectionDisplayName, _subsectionDisplayName)
+
+            urlName = "Unidad" + str(int(currentChapter)) + "Subsection" + str(int(currentSubsection)) + "Vertical" + str(int(sheetCurso.cell_value(row, CCURSOLESSONIDCOL)))
+            if sheetCurso.cell_value(row, CCURSOOBJETIVOSCOL) != "" or sheetCurso.cell_value(row,CCURSOVIDEOCOL) != "" or sheetCurso.cell_value(row, CCURSORESUMECOL) != "" or sheetCurso.cell_value(row, CCURSOFORUMCOL) != "":
+                etree.SubElement(page, 'vertical', url_name=urlName)
+                createVertical(currentChapter, currentSubsection, sheetCurso.cell_value(row, CCURSOLESSONIDCOL), row, urlName, _sectionDisplayName, _subsectionDisplayName)
 
             problemRow = findProblems(currentChapter, currentSubsection, sheetCurso.cell_value(row, CCURSOLESSONIDCOL))
             if problemRow > 0:
                 urlName += "Problems"
+                if _type == "A":
+                    if sheetCurso.cell_value(row, CCURSOLESSONDISPLAYNAMECOL) != "":
+                        displayName = sheetCurso.cell_value(row, CCURSOLESSONDISPLAYNAMECOL)
+                    else:
+                        displayName = "Examen"
+                else:
+                    displayName = "Actividad " + str(problemSetID)
                 etree.SubElement(page, 'vertical', url_name=urlName)
                 createProblemSet(currentChapter, currentSubsection, sheetCurso.cell_value(row, CCURSOLESSONIDCOL),
-                                 problemRow, urlName)
+                                 problemRow, urlName,displayName)
 
         if currentChapter < sheetCurso.cell_value(row, CCURSOCHAPTERIDCOL):
             break
 
     doc.write(xmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
 
-def createProblemSet(_Chapter, _Subsection, _Lesson, _row, _urlName):
+
+def createProblemSet(_Chapter, _Subsection, _Lesson, _row, _urlName, _displayName):
     """
     creates the sets of problems related with a lesson
     :param _Chapter:
@@ -388,7 +440,7 @@ def createProblemSet(_Chapter, _Subsection, _Lesson, _row, _urlName):
     :param _urlName:
     """
     global problemSetID
-    displayName = "Actividad " + str(problemSetID)
+    displayName = _displayName
     xmlfile = path + "/vertical/" + _urlName + ".xml"
     problemID = 1
     page = etree.Element('vertical', display_name=displayName)
@@ -417,6 +469,7 @@ def createProblemSet(_Chapter, _Subsection, _Lesson, _row, _urlName):
 
     problemSetID += 1
     doc.write(xmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
+
 
 def createProblem(_displayName, _row, _urlName):
     """
@@ -457,9 +510,9 @@ def createProblem(_displayName, _row, _urlName):
         elif type == "CheckBox":
             problemCheckBox(page, _row)
         elif type == "NumericalInput":
-            problemNumerical(page,_row)
+            problemNumerical(page, _row)
         elif type == "TextInput":
-            problemText(page,_row)
+            problemText(page, _row)
         else:
             print "Error"
             exit()
@@ -473,7 +526,8 @@ def createProblem(_displayName, _row, _urlName):
 
     doc.write(xmlfile, pretty_print=True, xml_declaration=False, encoding='utf-8')
 
-def problemText(_page,_row):
+
+def problemText(_page, _row):
     """
     add the text input response box
     <stringresponse answer="Michigan" type="ci" >
@@ -484,11 +538,11 @@ def problemText(_page,_row):
     tolerance = sheetProblem.cell_value(_row, CPROBLEMASCORRECTACOL)
     answerCol = CPROBLEMASRESPUESTACOL
 
-    root = etree.SubElement(_page, 'stringresponse', answer= unicode(sheetProblem.cell_value(_row, answerCol)))
+    root = etree.SubElement(_page, 'stringresponse', answer=unicode(sheetProblem.cell_value(_row, answerCol)))
     etree.SubElement(root, 'textline', size=unicode(unicode(sheetProblem.cell_value(_row, answerCol)).__sizeof__()))
 
 
-def problemNumerical(_page,_row):
+def problemNumerical(_page, _row):
     """
     add the numerical input response box
     <numericalresponse answer="3.14159">
@@ -500,9 +554,9 @@ def problemNumerical(_page,_row):
     tolerance = sheetProblem.cell_value(_row, CPROBLEMASCORRECTACOL)
     answerCol = CPROBLEMASRESPUESTACOL
 
-    root = etree.SubElement(_page, 'numericalresponse', answer= unicode(sheetProblem.cell_value(_row, answerCol)))
+    root = etree.SubElement(_page, 'numericalresponse', answer=unicode(sheetProblem.cell_value(_row, answerCol)))
     etree.SubElement(root, 'responseparam', type="tolerance", default=unicode(tolerance))
-    etree.SubElement(root,'formulaequationinput')
+    etree.SubElement(root, 'formulaequationinput')
 
 
 def problemMultiChoice(_page, _row):
@@ -518,13 +572,14 @@ def problemMultiChoice(_page, _row):
     while sheetProblem.ncols > answerCol and sheetProblem.cell_value(_row, answerCol) != "":
         try:
             choice = etree.SubElement(choicegroup, 'choice', correct=str((rightAnswer == currentAnswer)))
-            choice.text= unicode(sheetProblem.cell_value(_row, answerCol))
+            choice.text = unicode(sheetProblem.cell_value(_row, answerCol))
             #choice.append(etree.fromstring(sheetProblem.cell_value(_row, answerCol)))
             currentAnswer += 1
             answerCol += 2
         except:
             print "error adding option", sys.exc_info()[0]
             raise
+
 
 def problemCheckBox(_page, _row):
     """
@@ -534,15 +589,16 @@ def problemCheckBox(_page, _row):
     sheetProblem = wb.sheet_by_name(CPROBLEMASSHEET)
     rightAnswer = sheetProblem.cell_value(_row, CPROBLEMASCORRECTACOL)
     #comma separated
-    rightAnswer= rightAnswer.split(";")
+    rightAnswer = rightAnswer.split(";")
     answerCol = CPROBLEMASRESPUESTACOL
     currentAnswer = 1
     root = etree.SubElement(_page, 'choiceresponse')
     choicegroup = etree.SubElement(root, 'checkboxgroup', direction="Vertical")
     while sheetProblem.ncols > answerCol and sheetProblem.cell_value(_row, answerCol) != "":
         try:
-            choice = etree.SubElement(choicegroup, 'choice', correct=str(unicode(currentAnswer) in map(unicode.lower, rightAnswer)))
-            choice.text= unicode(sheetProblem.cell_value(_row, answerCol))
+            choice = etree.SubElement(choicegroup, 'choice',
+                                      correct=str(unicode(currentAnswer) in map(unicode.lower, rightAnswer)))
+            choice.text = unicode(sheetProblem.cell_value(_row, answerCol))
             #choice.append(etree.fromstring(sheetProblem.cell_value(_row, answerCol)))
             currentAnswer += 1
             answerCol += 2
