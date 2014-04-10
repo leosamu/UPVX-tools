@@ -1,3 +1,10 @@
+# coding=utf-8
+__author__ = u"Leonardo Salom Muñoz"
+__credits__ = u"Leonardo Salom Muñoz"
+__version__ = u"0.0.1-SNAPSHOT"
+__maintainer__ = u"Leonardo Salom Muñoz"
+__email__ = u"leosamu@upv.es"
+__status__ = u"Development"
 
 import os, tarfile, shutil, xlrd, datetime
 from lxml import etree
@@ -6,7 +13,6 @@ from lxml import etree
 """
     Const declaration
     this consts will help us in case of modifications in the excel sheet
-    TO-DO: readapt the consts to the new xls format.
 """
 
 """

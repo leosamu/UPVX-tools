@@ -1,9 +1,10 @@
-__author__ = "Leonardo Salom Muñoz"
-__credits__ = ["Leonardo Salom Muñoz"]
-__version__ = "0.0.1-SNAPSHOT"
-__maintainer__ = "Leonardo Salom Muñoz"
-__email__ = "leosamu@upv.es"
-__status__ = "Development"
+# coding=utf-8
+__author__ = u"Leonardo Salom Muñoz"
+__credits__ = u"Leonardo Salom Muñoz"
+__version__ = u"0.0.1-SNAPSHOT"
+__maintainer__ = u"Leonardo Salom Muñoz"
+__email__ = u"leosamu@upv.es"
+__status__ = u"Development"
 
 import pymongo
 import bson.son
@@ -137,5 +138,5 @@ def create_document_name(_dbDstCourse, _dbSrcDocument):
 
 trans_chapter(sys.argv[2], sys.argv[3], sys.argv[5])
 #python trans_chapter.py srvOrigen courseOrigen ChapterName srvDestination courseDestination
-#python trans_chapter.py edxtest.upv.es ofimatica/excel2010/2014-001 Unidad1 edxdb1.cc.upv.es Ofimatica/excel2010/2014-001
+
 
