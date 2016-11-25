@@ -233,6 +233,7 @@ def delNode(_cms_server,_set_cookie,_locator):
 def updateNode(_cms_server, _set_cookie,_locator,_coursekey,_category,_displayname,_data):
     '''
     Updates the node data and display_name of a node (this way we can fill the node data of inserted nodes)
+    needs some work in the payload construction in order to add more info not just the data
     :param _cms_server:
     :param _set_cookie:
     :param _locator:
